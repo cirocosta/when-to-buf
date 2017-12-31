@@ -3,7 +3,6 @@
 
       make
 
-      ./server
-      ./client 127.0.0.1
-
+      ./server <rx_bufsize>
+      ./client <address> <tx_bufsize>
 

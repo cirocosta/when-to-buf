@@ -9,7 +9,6 @@
 #include "./conn.h"
 
 #define LISTEN_BACKLOG 128
-#define MAXLINE (1 << 12)
 
 int
 init_server_conn(t_conn* connection, int listen_fd)
@@ -47,7 +46,6 @@ work_on_connection(t_conn* connection, int bufsize)
 	char* buf;
 	size_t n;
 	int run = 1;
-	int ret = 0;
 
 	buf = malloc(bufsize * sizeof(char));
 	if (buf == NULL) {
@@ -56,24 +54,23 @@ work_on_connection(t_conn* connection, int bufsize)
 	}
 
 	while (run) {
-		n = fread(buf, sizeof(char), MAXLINE, connection->rx);
+		n = fread(buf, sizeof(char), bufsize, connection->rx);
 		if (n == 0) {
 			if (feof(connection->rx)) {
-				ret = 0;
-				goto END;
+				free(buf);
+				return 0;
 			}
 
+			free(buf);
 			perror("failed to read contents - fread");
-			ret = 1;
-			goto END;
+			return 1;
 		}
 
 		printf("read=%ld\n", n);
 	}
 
-END:
 	free(buf);
-	return ret;
+	return 0;
 }
 
 int

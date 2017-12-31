@@ -1,4 +1,4 @@
-CFLAGS := -D_GNU_SOURCE -O2
+CFLAGS := -D_GNU_SOURCE -g
 
 all: build
 

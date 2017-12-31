@@ -61,9 +61,15 @@ init_client_conn(t_conn* connection, char* addr, int port)
 }
 
 int
-work_on_connection(t_conn* connection, int __attribute__((unused)) bufsize)
+work_on_connection(t_conn* connection, int bufsize)
 {
 	size_t n = 0;
+
+	if (bufsize > 0) {
+		setvbuf(connection->tx, NULL, _IOFBF, bufsize);
+	} else {
+		setvbuf(connection->tx, NULL, _IONBF, bufsize);
+	}
 
 	n = fwrite(connection->tx, sizeof(char), SRC_BUFSIZE, connection->tx);
 	if (n == 0) {
