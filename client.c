@@ -7,9 +7,7 @@
 
 #include "./conn.h"
 
-#define LISTEN_BACKLOG 128
-#define MAXLINE 4096
-#define SRC_BUFSIZE (1 << 20)
+#define SRC_BUFSIZE (1 << 24)
 
 char SOURCE_BUFFER[SRC_BUFSIZE] = { 0 };
 
