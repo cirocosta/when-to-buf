@@ -42,34 +42,53 @@ init_server_conn(t_conn* connection, int listen_fd)
 }
 
 int
-work_on_connection(t_conn* connection)
+work_on_connection(t_conn* connection, int bufsize)
 {
+	char* buf;
+	size_t n;
 	int run = 1;
-        char buf[MAXLINE];
-        size_t n;
+	int ret = 0;
 
-
-	while (run) {
-                n = fread(buf, sizeof(char), MAXLINE, connection->rx);
-                if (n == 0) {
-                        if (feof(connection->rx)) {
-                                return 0;
-                        }
-
-                        perror("failed to read contents - fread");
-                        return 1;
-                }
+	buf = malloc(bufsize * sizeof(char));
+	if (buf == NULL) {
+		perror("failed to allocated buffer memory");
+		return 1;
 	}
 
-	return 0;
+	while (run) {
+		n = fread(buf, sizeof(char), MAXLINE, connection->rx);
+		if (n == 0) {
+			if (feof(connection->rx)) {
+				ret = 0;
+				goto END;
+			}
+
+			perror("failed to read contents - fread");
+			ret = 1;
+			goto END;
+		}
+
+		printf("read=%ld\n", n);
+	}
+
+END:
+	free(buf);
+	return ret;
 }
 
 int
-main()
+main(int argc, char** argv)
 {
 	int listen_fd;
 	int err = 0;
 	struct sockaddr_in server_addr;
+	char* bufsize = argv[1];
+
+	if (argc != 2) {
+		printf("ERROR: an argument must be supplied.\n");
+		printf("Usage: ./server <rx_bufsize>\n");
+		exit(1);
+	}
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -111,7 +130,7 @@ main()
 	for (;;) {
 		t_conn connection = { 0 };
 		init_server_conn(&connection, listen_fd);
-		work_on_connection(&connection);
+		work_on_connection(&connection, atoi(bufsize));
 		destroy_conn(&connection);
 	}
 

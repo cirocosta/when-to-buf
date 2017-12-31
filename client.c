@@ -9,6 +9,9 @@
 
 #define LISTEN_BACKLOG 128
 #define MAXLINE 4096
+#define SRC_BUFSIZE (1 << 20)
+
+char SOURCE_BUFFER[SRC_BUFSIZE] = { 0 };
 
 int
 init_client_conn(t_conn* connection, char* addr, int port)
@@ -58,16 +61,32 @@ init_client_conn(t_conn* connection, char* addr, int port)
 }
 
 int
+work_on_connection(t_conn* connection, int __attribute__((unused)) bufsize)
+{
+	size_t n = 0;
+
+	n = fwrite(connection->tx, sizeof(char), SRC_BUFSIZE, connection->tx);
+	if (n == 0) {
+		perror("failed to write BUFSIZE bytes - fwrite");
+		return 1;
+	}
+
+	return 0;
+}
+
+int
 main(int argc, char** argv)
 {
-	if (argc == 1) {
-		printf("ERROR: an argument must be supplied.\n");
-		printf("Usage:  ./client <address>\n");
+	if (argc != 3) {
+		printf("ERROR: two arguments must be supplied.\n");
+		printf("Usage:  ./client <address> <tx_bufsize>\n");
 		exit(1);
 	}
 
 	int err = 0;
 	char* addr = argv[1];
+	char* bufsize = argv[2];
+
 	t_conn connection = { 0 };
 
 	err = init_client_conn(&connection, addr, 1337);
@@ -75,6 +94,8 @@ main(int argc, char** argv)
 		printf("failed to initialize connection.\n");
 		exit(1);
 	}
+
+	work_on_connection(&connection, atoi(bufsize));
 
 	destroy_conn(&connection);
 	return 0;
