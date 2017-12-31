@@ -8,6 +8,7 @@
 
 #include "./conn.h"
 
+#define DST_BUFSIZE (1 << 20)
 #define LISTEN_BACKLOG 128
 
 int
@@ -40,28 +41,27 @@ init_server_conn(t_conn* connection, int listen_fd)
 	return 0;
 }
 
+char dest_buf[DST_BUFSIZE] = { 0 };
+
 int
 work_on_connection(t_conn* connection, int bufsize)
 {
-	char* buf;
 	size_t n;
 	int run = 1;
 
-	buf = malloc(bufsize * sizeof(char));
-	if (buf == NULL) {
-		perror("failed to allocated buffer memory");
-		return 1;
+	if (bufsize > 0) {
+		setvbuf(connection->rx, NULL, _IOFBF, bufsize);
+	} else {
+		setvbuf(connection->rx, NULL, _IONBF, bufsize);
 	}
 
 	while (run) {
-		n = fread(buf, sizeof(char), bufsize, connection->rx);
+		n = fread(dest_buf, sizeof(char), DST_BUFSIZE, connection->rx);
 		if (n == 0) {
 			if (feof(connection->rx)) {
-				free(buf);
 				return 0;
 			}
 
-			free(buf);
 			perror("failed to read contents - fread");
 			return 1;
 		}
@@ -69,7 +69,6 @@ work_on_connection(t_conn* connection, int bufsize)
 		printf("read=%ld\n", n);
 	}
 
-	free(buf);
 	return 0;
 }
 
