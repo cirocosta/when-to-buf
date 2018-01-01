@@ -8,7 +8,7 @@
 
 #include "./conn.h"
 
-#define DST_BUFSIZE (1 << 24)
+#define DST_BUFSIZE (1 << 30)
 #define LISTEN_BACKLOG 128
 
 char DEST_BUFFER[DST_BUFSIZE] = { 0 };
@@ -56,7 +56,8 @@ work_on_connection(t_conn* connection, int bufsize)
 	}
 
 	while (run) {
-		n = fread(DEST_BUFFER, sizeof(char), DST_BUFSIZE, connection->rx);
+		n =
+		  fread(DEST_BUFFER, sizeof(char), DST_BUFSIZE, connection->rx);
 		if (n == 0) {
 			if (feof(connection->rx)) {
 				return 0;

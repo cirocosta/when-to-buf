@@ -7,7 +7,7 @@
 
 #include "./conn.h"
 
-#define SRC_BUFSIZE (1 << 24)
+#define SRC_BUFSIZE (1 << 10)
 
 char SOURCE_BUFFER[SRC_BUFSIZE] = { 0 };
 
@@ -62,17 +62,51 @@ int
 work_on_connection(t_conn* connection, int bufsize)
 {
 	size_t n = 0;
+	int err = 0;
+	uint64_t to_write = bufsize;
+	uint64_t total_written = 0;
+
+	char* write_buf;
 
 	if (bufsize > 0) {
-		setvbuf(connection->tx, NULL, _IOFBF, bufsize);
+		write_buf = malloc(bufsize * sizeof(char));
+		if (write_buf == NULL) {
+			perror("failed to allocate write_buf");
+			return 1;
+		}
+
+		err = setvbuf(connection->tx, write_buf, _IOFBF, bufsize);
+		if (err != 0) {
+			perror("failed to set block buffer - setvbuf");
+			return 1;
+		}
 	} else {
-		setvbuf(connection->tx, NULL, _IONBF, bufsize);
+		err = setvbuf(connection->tx, NULL, _IONBF, bufsize);
+		if (err != 0) {
+			perror("failed to remove buffering - setvbuf");
+			return 1;
+		}
 	}
 
-	n = fwrite(connection->tx, sizeof(char), SRC_BUFSIZE, connection->tx);
-	if (n == 0) {
-		perror("failed to write BUFSIZE bytes - fwrite");
-		return 1;
+	for (;;) {
+		if (total_written + bufsize > SRC_BUFSIZE) {
+			to_write = SRC_BUFSIZE - total_written;
+		}
+
+		n = fwrite(SOURCE_BUFFER + total_written,
+		           sizeof(char),
+		           to_write,
+		           connection->tx);
+		if (n == 0) {
+			perror("failed to write BUFSIZE bytes - fwrite");
+			return 1;
+		}
+
+		total_written += n;
+
+		if (total_written == SRC_BUFSIZE) {
+			return 0;
+		}
 	}
 
 	return 0;
