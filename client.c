@@ -8,7 +8,7 @@
 #include "./conn.h"
 #include "./timing.h"
 
-#define SRC_BUFSIZE (1 << 10)
+#define SRC_BUFSIZE (1 << 30)
 
 char SOURCE_BUFFER[SRC_BUFSIZE] = { 0 };
 
@@ -141,7 +141,7 @@ main(int argc, char** argv)
 	work_on_connection(&connection, atoi(bufsize));
 	timing_finish(&timing);
 
-	printf("%d\n", timing_get_elapsed(&timing));
+	printf("%s,%d\n", bufsize, timing_get_elapsed(&timing));
 
 	destroy_conn(&connection);
 	return 0;

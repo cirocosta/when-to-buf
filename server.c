@@ -8,7 +8,7 @@
 
 #include "./conn.h"
 
-#define DST_BUFSIZE (1 << 30)
+#define DST_BUFSIZE (1 << 24)
 #define LISTEN_BACKLOG 128
 
 char DEST_BUFFER[DST_BUFSIZE] = { 0 };

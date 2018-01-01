@@ -5,6 +5,7 @@ all: build
 build:
 	gcc $(CFLAGS) -o ./client ./client.c
 	gcc $(CFLAGS) -o ./server ./server.c
+	gcc $(CFLAGS) -o ./shift ./shift.c
 
 fmt:
 	find . -name "*.c" -o -name "*.h" | \
