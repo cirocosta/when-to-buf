@@ -1,7 +1,7 @@
 #!/bin/bash
 
 main () {
-  for i in $(seq 1 10); do
+  for i in $(seq 1 16); do
     run_all_shifts
   done
 }
