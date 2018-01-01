@@ -1,5 +1,5 @@
-#ifndef H__WHEN_TO_BUF
-#define H__WHEN_TO_BUF
+#ifndef H__CONN
+#define H__CONN
 
 #include <stdio.h>
 
@@ -29,4 +29,4 @@ destroy_conn(t_conn* conn)
 	return;
 }
 
-#endif // ! H__WHEN_TO_BUF
+#endif // ! H__CONN

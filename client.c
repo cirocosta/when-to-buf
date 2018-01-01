@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "./conn.h"
+#include "./timing.h"
 
 #define SRC_BUFSIZE (1 << 10)
 
@@ -126,6 +127,9 @@ main(int argc, char** argv)
 	char* bufsize = argv[2];
 
 	t_conn connection = { 0 };
+	t_timing timing = {
+		.start = (struct timeval){}, .end = (struct timeval){},
+	};
 
 	err = init_client_conn(&connection, addr, 1337);
 	if (err == 1) {
@@ -133,7 +137,11 @@ main(int argc, char** argv)
 		exit(1);
 	}
 
+	timing_start(&timing);
 	work_on_connection(&connection, atoi(bufsize));
+	timing_finish(&timing);
+
+	printf("%d\n", timing_get_elapsed(&timing));
 
 	destroy_conn(&connection);
 	return 0;
